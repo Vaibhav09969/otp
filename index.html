@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Generator</title>
+    <link href="https://fonts.googleapis.com/css?family=Poppins" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins';
+        }
+        html, body {
+            height: 100%;
+            width: 100%;
+        }
+
+        .main-body {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(90deg, purple, cyan);
+            background-size: 400% 400%;
+            animation: gradient 4s ease infinite;
+        }
+
+        @keyframes gradient {
+            0% {
+                background-position: 10% 50%;
+                background: linear-gradient(0deg);
+            }
+            25% {
+                background-position: 50% 50%;
+                background: linear-gradient(90deg);
+            }
+            50% {
+                background-position: 100% 30%;
+                background: linear-gradient(180deg);
+            }
+            50% {
+                background-position: 50% 30%;
+                background: linear-gradient(270deg);
+            }
+            100% {
+                background-position: 10% 50%;
+                background: linear-gradient(360deg);
+            }
+        }
+
+        .form {
+            display: flex;
+            flex-direction: column;
+            background-color: rgba(177, 177, 177, 0.342);
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            width: 320px;
+            padding: 20px;
+            gap: 15px;
+        }
+
+        .form input {
+            padding: 10px 16px;
+            width: 100%;
+            height: 40px;
+            border-radius: 8px;
+            border: 1px solid black;
+        }
+
+        .form span {
+            font-size: 15px;
+            color: white;
+        }
+
+        button {
+            background-color: rgb(52, 185, 141);
+            height: 40px;
+            outline: none;
+            border: none;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1rem;
+            font-weight: 500;
+            color: white;
+            gap: 5px;
+            cursor: pointer;
+            transition: 0.2s linear;
+            width: 100%; /* Ensure buttons stretch across the container */
+        }
+
+        button:hover {
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.521);
+        }
+
+        button img {
+            width: 20px;
+        }
+
+        #otp-section {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <section class="main-body">
+        <form class="form">
+            <div class="user-name">
+                <span>Username</span>
+                <input type="text" id="username" />
+            </div>
+            <div class="e-mail">
+                <span>Email</span>
+                <input type="email" id="email" />
+            </div>
+            <button id="generate-otp-btn">
+                <img src="img/generate.png" alt="" />Generate OTP
+            </button>
+
+            <!-- OTP Input Section -->
+            <div id="otp-section">
+                <div class="user-name">
+                    <span>Enter OTP</span>
+                    <input type="text" id="otp-input" placeholder="Enter OTP" />
+                </div>
+                <button id="verify-otp-btn">Verify OTP</button>
+            </div>
+        </form>
+    </section>
+
+    <script>
+        let OTP;
+        const length = 8;
+
+        const upperCase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const lowerCase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.toLowerCase();
+        const numbers = '0123456789';
+        const symbols = `!@#$%^&*()_+-/?~:;"'{}|,<>=[]`;
+
+        let mixChars = upperCase + lowerCase + numbers + symbols;
+
+        let createPassword = () => {
+            let password = '';
+            password += upperCase[Math.floor(Math.random() * upperCase.length)];
+            password += lowerCase[Math.floor(Math.random() * upperCase.length)];
+            password += numbers[Math.floor(Math.random() * numbers.length)];
+            password += symbols[Math.floor(Math.random() * symbols.length)];
+
+            while (length > password.length) {
+                password += mixChars[Math.floor(Math.random() * mixChars.length)];
+            }
+            return password;
+        };
+
+        let emailField = document.getElementById('email');
+        let nameField = document.getElementById('username');
+        let generateOtpBtn = document.getElementById('generate-otp-btn');
+        let otpInput = document.getElementById('otp-input');
+        let verifyOtpBtn = document.getElementById('verify-otp-btn');
+
+        // Generate OTP and Send Email
+        generateOtpBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (!emailField.value || !nameField.value)
+                alert('Please Provide Information...');
+            else {
+                OTP = createPassword();
+                console.log('Generated OTP:', OTP); // Debugging log to check OTP in console
+
+                let emailTexts = `To verify your email address, please use the following One Time Password (OTP):
+                                  ${OTP}
+                              Do not share this OTP with anyone. Dynamin Web HUB takes your account security very seriously.
+                              Dynamic Web HUB Customer Service will never ask you to disclose or verify your Dynamic Web HUB password,
+                              OTP, credit card, or banking account number. If you receive a suspicious email with a link to
+                              update your account information, do not click on the link—instead, report the email to Dynamin Web HUB
+                              for investigation.
+
+                              our email : dynamicwebhub1@gmail.com
+
+                              Thank you!`;
+
+                function sendMail() {
+                    (function () {
+                        emailjs.init('65UrAhQQh1tsgfyF2');  // Public Key provided by Emailjs.com
+                    })();
+
+                    var params = {
+                        to: emailField.value,
+                        message: emailTexts,
+                    };
+
+                    var serviceID = 'service_it3esn6'; // Email Service ID from emailjs.com
+                    var templateID = 'template_22b489n'; // Template ID from emailjs.com
+
+                    emailjs.send(serviceID, templateID, params).then(res => {
+                        alert('OTP has been Sent to your Email Address...');
+                        // Show OTP input form after sending OTP
+                        document.getElementById('otp-section').style.display = 'block';
+                    }).catch(() => {
+                        alert('Failed to send OTP. Please try again.');
+                    });
+                }
+
+                sendMail();
+            }
+        });
+
+        // OTP Verification Logic
+        verifyOtpBtn.addEventListener('click', () => {
+            let enteredOtp = otpInput.value;
+            if (enteredOtp === OTP) {
+                alert('OTP Verified Successfully!');
+                // Redirect to the next page after OTP is verified successfully
+                window.location.href = 'nextpage.html';  // Replace with the correct URL of the next page
+            } else {
+                alert('Invalid OTP. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>
