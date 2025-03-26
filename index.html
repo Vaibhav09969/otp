@@ -92,7 +92,7 @@
             gap: 5px;
             cursor: pointer;
             transition: 0.2s linear;
-            width: 100%; /* Ensure buttons stretch across the container */
+            width: 100%;
         }
 
         button:hover {
@@ -105,6 +105,14 @@
 
         #otp-section {
             display: none;
+            position: relative;
+        }
+
+        /* Timer styling */
+        .timer {
+            font-size: 14px;
+            color: white;
+            text-align: right;
         }
     </style>
 </head>
@@ -129,6 +137,8 @@
                     <span>Enter OTP</span>
                     <input type="text" id="otp-input" placeholder="Enter OTP" />
                 </div>
+                <!-- Timer Display -->
+                <div id="otp-timer" class="timer">Time left: 00:45</div>
                 <button id="verify-otp-btn">Verify OTP</button>
             </div>
         </form>
@@ -137,6 +147,7 @@
     <script>
         let OTP;
         const length = 8;
+        let otpExpirationTime = 45; // OTP expiration time set to 45 seconds
 
         const upperCase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         const lowerCase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.toLowerCase();
@@ -163,6 +174,9 @@
         let generateOtpBtn = document.getElementById('generate-otp-btn');
         let otpInput = document.getElementById('otp-input');
         let verifyOtpBtn = document.getElementById('verify-otp-btn');
+        let otpSection = document.getElementById('otp-section');
+        let otpTimer = document.getElementById('otp-timer');
+        let timerInterval;
 
         // Generate OTP and Send Email
         generateOtpBtn.addEventListener('click', (e) => {
@@ -201,7 +215,8 @@
                     emailjs.send(serviceID, templateID, params).then(res => {
                         alert('OTP has been Sent to your Email Address...');
                         // Show OTP input form after sending OTP
-                        document.getElementById('otp-section').style.display = 'block';
+                        otpSection.style.display = 'block';
+                        startTimer(); // Start countdown timer when OTP is sent
                     }).catch(() => {
                         alert('Failed to send OTP. Please try again.');
                     });
@@ -211,13 +226,30 @@
             }
         });
 
+        // Start countdown timer
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                if (otpExpirationTime <= 0) {
+                    clearInterval(timerInterval);
+                    otpInput.value = 'OTP expired!';
+                    otpInput.disabled = true;
+                    verifyOtpBtn.disabled = true;
+                } else {
+                    let minutes = Math.floor(otpExpirationTime / 60);
+                    let seconds = otpExpirationTime % 60;
+                    otpTimer.textContent = `Time left: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                    otpExpirationTime--;
+                }
+            }, 1000);
+        }
+
         // OTP Verification Logic
         verifyOtpBtn.addEventListener('click', () => {
             let enteredOtp = otpInput.value;
             if (enteredOtp === OTP) {
                 alert('OTP Verified Successfully!');
                 // Redirect to the next page after OTP is verified successfully
-                location.replace = 'vaibhav.html';  // Replace with the correct URL of the next page
+                window.location.href = 'nextpage.html';  // Replace with the correct URL of the next page
             } else {
                 alert('Invalid OTP. Please try again.');
             }
